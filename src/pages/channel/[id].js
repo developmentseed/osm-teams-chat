@@ -17,6 +17,7 @@ export default function ChannelView() {
   const [messages, setMessages] = useState(dummyMessages);
   const [msgValue, setMsgValue] = useState('');
   const channelId = query.id;
+  console.log('channel id', channelId);
   let handleMsgChange = (e) => {
     setMsgValue(e.target.value);
   };
@@ -40,7 +41,7 @@ export default function ChannelView() {
       cluster: process.env.NEXT_PUBLIC_PUSHER_CLUSTER
       // FIXME: ADD channelAuthorization
     });
-    pusher.subscribe('1'); //FIXME: use correct channel name
+    pusher.subscribe(`${channelId}`);
     pusher.bind('chat', function(data) {
       const message = {
         from: data.username,
