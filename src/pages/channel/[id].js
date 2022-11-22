@@ -1,8 +1,10 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import NextLink from "next/link";
-import { Text, Button, Flex, Heading } from "@chakra-ui/react";
+import { Text, Textarea, Button, Flex, Heading } from "@chakra-ui/react";
+import pusherJs from "pusher-js";
 
-const messages = [
+
+const dummyMessages = [
   { from: "marc", text: "Hello", timestamp: 1669042245033 },
   { from: "vitor", text: "Hi", timestamp: 1669042245133 },
   { from: "marc", text: "How are you?", timestamp: 1669042245233 },
@@ -10,6 +12,42 @@ const messages = [
 ];
 
 export default function ChannelView() {
+  let handleMsgChange = (e) => {
+    setMsgValue(e.target.value);
+  };
+
+  let sendMessage = function() {
+    const msg = "test msg"; //FIXME: get msg value from text area
+    const username = "test-user"; //FIXME: get username correctly
+    const channel = "1"; //FIXME: get channel correctly
+    fetch('/api/chat/post', {
+      'method': 'POST',
+      'headers': { 'Content-Type': 'application/json' },
+      'body': JSON.stringify({msg, username, channel})
+    })
+  };
+
+  const [messages, setMessages] = useState(dummyMessages);
+  const [msgValue, setMsgValue] = useState('');
+
+  useEffect(() => {
+    console.log('pusher key', process.env.NEXT_PUBLIC_PUSHER_KEY);
+    const pusher = new pusherJs(process.env.NEXT_PUBLIC_PUSHER_KEY, {
+      cluster: process.env.NEXT_PUBLIC_PUSHER_CLUSTER
+      // FIXME: ADD channelAuthorization
+    });
+    pusher.subscribe('1'); //FIXME: use correct channel name
+    pusher.bind('chat', function(data) {
+      const message = {
+        from: data.username,
+        text: data.msg,
+        timestamp: new Date().toString()
+      }
+      const newMessages = messages.concat([message]);
+      setMessages(newMessages);
+    });
+  }, []);
+
   return (
     <Flex height="100vh" alignItems="center" justifyContent="center">
       <Flex direction="column" background="gray.100" w={400} p={12} rounded={6}>
@@ -19,6 +57,17 @@ export default function ChannelView() {
             {m.from}: {m.text}{" "}
           </Text>
         ))}
+        <Textarea
+          value={msgValue}
+          onChange={handleMsgChange}
+          placeholder={'Type your message here...'}
+          size="m"
+        />
+        <Button
+          onClick={sendMessage}
+        >
+          Send
+        </Button>
         <NextLink href={`/`} passHref>
           <Button colorScheme="teal" mt={5}>
             Back to home page
