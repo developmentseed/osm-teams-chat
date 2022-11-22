@@ -55,8 +55,9 @@ async function getMyTeams (accessToken) {
         for (let moderatedTeam of moderatorOf) {
           if (moderatedTeam.id === team.id) {
             return assoc('moderator', true, team)
-          }
+          } 
         }
+        return team
       })
       return teams
     } else {
