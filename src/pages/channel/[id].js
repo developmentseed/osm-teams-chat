@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useSession } from "next-auth/react"
 import NextLink from "next/link";
 import { useRouter } from "next/router";
 import { Text, Textarea, Button, Flex, Heading } from "@chakra-ui/react";
@@ -13,10 +14,12 @@ const dummyMessages = [
 ];
 
 export default function ChannelView() {
+  const { data: session } = useSession();
   const { query } = useRouter();
   const [messages, setMessages] = useState(dummyMessages);
   const [msgValue, setMsgValue] = useState('');
-  const channelId = query.id;
+  let channelId = query.id;
+  channelId = `presence-${channelId}`;
   console.log('channel id', channelId);
   let handleMsgChange = (e) => {
     setMsgValue(e.target.value);
@@ -37,9 +40,15 @@ export default function ChannelView() {
 
 
   useEffect(() => {
+    console.log('session', session);
     const pusher = new pusherJs(process.env.NEXT_PUBLIC_PUSHER_KEY, {
-      cluster: process.env.NEXT_PUBLIC_PUSHER_CLUSTER
-      // FIXME: ADD channelAuthorization
+      cluster: process.env.NEXT_PUBLIC_PUSHER_CLUSTER,
+      channelAuthorization: {
+        endpoint: '/api/chat/auth',
+        headers: {
+          'Authorization': `Bearer ${session.accessToken}`
+        }
+      }
     });
     pusher.subscribe(`${channelId}`);
     pusher.bind('chat', function(data) {
