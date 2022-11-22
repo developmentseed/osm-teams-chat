@@ -1,6 +1,6 @@
-import { useState } from "react";
-import NextLink from 'next/link'
+import NextLink from "next/link";
 import { Button, Flex, Heading, Text } from "@chakra-ui/react";
+import { useSession, signIn, signOut } from "next-auth/react";
 
 const SignInBox = ({ onSignIn }) => (
   <Flex height="100vh" alignItems="center" justifyContent="center">
@@ -52,11 +52,15 @@ const TeamListPage = ({ onSignOut }) => (
 );
 
 export default function Home() {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const { status } = useSession();
+
+  if (status === "loading") return null;
+
+  const isAuthenticated = status === "authenticated";
 
   return isAuthenticated ? (
-    <TeamListPage onSignOut={() => setIsAuthenticated(false)} />
+    <TeamListPage onSignOut={signOut} />
   ) : (
-    <SignInBox onSignIn={() => setIsAuthenticated(true)} />
+    <SignInBox onSignIn={() => signIn("osm-teams")} />
   );
 }

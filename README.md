@@ -16,6 +16,15 @@ Install Node.js modules:
 
     yarn
 
+Go to <https://mapping.team> and register a new app with callback URL `http://localhost:3000/api/auth/callback/osm-teams`.
+
+Add the provided client id and secret to .env.local:
+
+```
+OSM_TEAMS_CLIENT_ID=<client_id>
+OSM_TEAMS_CLIENT_SECRET=<client_secret>
+```
+
 Start the server:
 
     yarn dev
