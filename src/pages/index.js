@@ -22,15 +22,21 @@ const TeamListPage = ({ availableTeams, onSignOut }) => (
   <Flex height="100vh" alignItems="center" justifyContent="center">
     <Flex direction="column" background="gray.100" w={400} p={12} rounded={6}>
       <Heading mb={6}>OSM Teams Chat</Heading>
-      <Text mb={6}>Select a channel to join:</Text>
-      {availableTeams.map((t) => (
-        <NextLink key={t.id} href={`/channel/${t.id}`} passHref>
-          <Button as="a" colorScheme="teal" m={2} justifyContent="left">
-            {t.name}
-          </Button>
-            <span>{t.moderator ? "mod" : "member"}</span>
-        </NextLink>
-      ))}
+      {availableTeams.length > 0 ? (
+        <>
+          <Text mb={6}>Select a channel to join:</Text>
+          {availableTeams.map((t) => (
+            <NextLink key={t.id} href={`/channel/${t.id}`} passHref>
+              <Button as="a" colorScheme="teal" m={2} justifyContent="left">
+                {t.name}
+              </Button>
+              <span>{t.moderator ? "mod" : "member"}</span>
+            </NextLink>
+          ))}{" "}
+        </>
+      ) : (
+        <Text mb={6}>There are no teams available.</Text>
+      )}
 
       <Button colorScheme="teal" onClick={onSignOut} mt={5}>
         Sign out
