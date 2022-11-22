@@ -31,7 +31,6 @@ export default function ChannelView() {
   const [msgValue, setMsgValue] = useState('');
 
   useEffect(() => {
-    console.log('pusher key', process.env.NEXT_PUBLIC_PUSHER_KEY);
     const pusher = new pusherJs(process.env.NEXT_PUBLIC_PUSHER_KEY, {
       cluster: process.env.NEXT_PUBLIC_PUSHER_CLUSTER
       // FIXME: ADD channelAuthorization
