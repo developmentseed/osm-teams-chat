@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import NextLink from "next/link";
+import { useRouter } from "next/router";
 import { Text, Textarea, Button, Flex, Heading } from "@chakra-ui/react";
 import pusherJs from "pusher-js";
 
@@ -12,23 +13,27 @@ const dummyMessages = [
 ];
 
 export default function ChannelView() {
+  const { query } = useRouter();
+  const [messages, setMessages] = useState(dummyMessages);
+  const [msgValue, setMsgValue] = useState('');
+  const channelId = query.id;
   let handleMsgChange = (e) => {
     setMsgValue(e.target.value);
   };
 
   let sendMessage = function() {
-    const msg = "test msg"; //FIXME: get msg value from text area
+    const msg = msgValue;
     const username = "test-user"; //FIXME: get username correctly
-    const channel = "1"; //FIXME: get channel correctly
+    const channel = `${channelId}`;
     fetch('/api/chat/post', {
       'method': 'POST',
       'headers': { 'Content-Type': 'application/json' },
       'body': JSON.stringify({msg, username, channel})
     })
+    setMsgValue('')
   };
 
-  const [messages, setMessages] = useState(dummyMessages);
-  const [msgValue, setMsgValue] = useState('');
+
 
   useEffect(() => {
     const pusher = new pusherJs(process.env.NEXT_PUBLIC_PUSHER_KEY, {
@@ -42,6 +47,7 @@ export default function ChannelView() {
         text: data.msg,
         timestamp: new Date().toString()
       }
+      console.log('received msg', message);
       const newMessages = messages.concat([message]);
       setMessages(newMessages);
     });
