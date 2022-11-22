@@ -1,4 +1,5 @@
 import { useState } from "react";
+import NextLink from 'next/link'
 import { Button, Flex, Heading, Text } from "@chakra-ui/react";
 
 const SignInBox = ({ onSignIn }) => (
@@ -36,9 +37,11 @@ const TeamListPage = ({ onSignOut }) => (
       <Heading mb={6}>OSM Teams Chat</Heading>
       <Text mb={6}>Select a channel to join:</Text>
       {availableTeams.map((t) => (
-        <Button key={t.id} colorScheme="teal" m={2} justifyContent='left'>
-          {t.displayName}
-        </Button>
+        <NextLink key={t.id} href={`/channel/${t.id}`} passHref>
+          <Button as="a" colorScheme="teal" m={2} justifyContent="left">
+            {t.displayName}
+          </Button>
+        </NextLink>
       ))}
 
       <Button colorScheme="teal" onClick={onSignOut} mt={5}>
