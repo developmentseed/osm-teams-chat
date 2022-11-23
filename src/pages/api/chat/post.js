@@ -38,8 +38,9 @@ export default async function handler(req, res) {
     pusher.trigger(channel, 'chat', {
       username,
       msg
+    }, () => {
+      return res.status(200).end({'ok': 'ok'});
     })
-    res.status(200).json({ok: 'ok'})
   } catch (e) {
     console.log('auth error', e)
     res.status(401).json({'error': 'Not authorized'})
