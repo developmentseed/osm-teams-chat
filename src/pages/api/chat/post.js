@@ -1,6 +1,6 @@
-import getMyTeams from "../../../getMyTeams";
-
 const Pusher = require("pusher");
+import { getToken } from "next-auth/jwt"
+import { cachedUserTeams } from "./teams";
 
 const pusher = new Pusher({
   appId: process.env.PUSHER_APP_ID,
@@ -12,17 +12,19 @@ const pusher = new Pusher({
 
 export default async function handler(req, res) {
   // FIXME: add some validation for POST params
-  const { username, channel, msg } = req.body;
+  const token = await getToken({ req })
 
-  if (!req.headers.authorization) {
-    return res.status(401).json({ error: "Not authorized" });
+  if (!token) {
+    // Not Signed in
+    res.status(401).json({ "error": "Not authorized"})
   }
 
-  const accessToken = req.headers.authorization.replace("Bearer ", "");
-  //FIXME: Implement check if accessToken has permission to POST to this channel
+  const { userId, accessToken } = token
+
+  const { username, channel, msg } = req.body;
 
   try {
-    const myTeams = await getMyTeams(accessToken);
+    const myTeams = await cachedUserTeams(userId, accessToken);
 
     const channelId = channel.replace("presence-", "");
 

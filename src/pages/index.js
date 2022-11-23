@@ -2,7 +2,6 @@ import NextLink from "next/link";
 import { Button, Flex, Heading, Text } from "@chakra-ui/react";
 import { useSession, signIn, signOut } from "next-auth/react";
 import { useEffect, useState } from "react";
-import getMyTeams from "../getMyTeams";
 
 const SignInBox = ({ onSignIn }) => (
   <Flex height="100vh" alignItems="center" justifyContent="center">
@@ -55,7 +54,12 @@ export default function Home() {
   }
 
   useEffect(() => {
-    getMyTeams(accessToken)
+    fetch('/api/chat/teams', {
+      'headers': {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${accessToken}`
+      }})
+    .then(res => res.json())
     .then((teams) => {
       setAvailableTeams(teams)
     })
