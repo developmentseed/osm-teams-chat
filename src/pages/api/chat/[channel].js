@@ -1,4 +1,3 @@
-const Pusher = require("pusher");
 import { getToken } from "next-auth/jwt"
 import { cachedUserTeams } from "./teams";
 import { Redis } from "@upstash/redis"
@@ -8,17 +7,11 @@ const redis = new Redis({
   token: process.env.UPSTASH_REDIS_REST_TOKEN
 })
 
-const pusher = new Pusher({
-  appId: process.env.PUSHER_APP_ID,
-  key: process.env.PUSHER_KEY,
-  secret: process.env.PUSHER_SECRET,
-  cluster: process.env.PUSHER_CLUSTER,
-  useTLS: true,
-});
-
 export default async function handler(req, res) {
   // FIXME: add some validation for POST params
   const token = await getToken({ req })
+  const channel = req.query.channel
+  console.log(channel)
 
   if (!token) {
     // Not Signed in
@@ -26,8 +19,6 @@ export default async function handler(req, res) {
   }
 
   const { userId, accessToken } = token
-
-  const { username, channel, msg } = req.body;
 
   try {
     const myTeams = await cachedUserTeams(userId, accessToken);
@@ -38,19 +29,10 @@ export default async function handler(req, res) {
     if (!teamIds.includes(channelId)) {
       return res.status(401).json({ error: "Not authorized" });
     }
+  
+    const history = await redis.lrange(channel, 0, 50)
 
-    await pusher.trigger(channel, "chat", {
-      username,
-      msg,
-    });
-
-    const listLength = await redis.lpush(channel, { from: username, text: msg, timestamp: Date.now()})
-    // Keep at most 50 messages per channel
-    if (listLength > 50) {
-      await redis.rpop(channel)
-    }
-
-    return res.status(200).json({ ok: "ok" });
+    return res.status(200).json(history);
   } catch (e) {
     console.log("auth error", e);
     return res.status(401).json({ error: "Not authorized" });
