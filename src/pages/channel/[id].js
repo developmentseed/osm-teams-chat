@@ -6,7 +6,7 @@ import { Text, Textarea, Button, Flex, Heading } from "@chakra-ui/react"
 import pusherJs from "pusher-js"
 
 export default function ChannelView() {
-  const { data: session } = useSession()
+  const { data: session, status } = useSession()
   const { query } = useRouter()
   const [messages, setMessages] = useState([])
   const [msgValue, setMsgValue] = useState('')
@@ -35,7 +35,9 @@ export default function ChannelView() {
 
 
   useEffect(() => {
-    console.log('session', session);
+    // Wait for authentication    
+    if (status !== 'authenticated') return;
+
     const pusher = new pusherJs(process.env.NEXT_PUBLIC_PUSHER_KEY, {
       cluster: process.env.NEXT_PUBLIC_PUSHER_CLUSTER,
       channelAuthorization: {
@@ -56,7 +58,7 @@ export default function ChannelView() {
       const newMessages = messages.concat([message]);
       setMessages(newMessages);
     })
-  }, [])
+  }, [status])
 
   return (
     <Flex height="100vh" alignItems="center" justifyContent="center">
