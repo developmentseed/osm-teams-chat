@@ -1,9 +1,9 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect } from "react"
 import { useSession } from "next-auth/react"
-import NextLink from "next/link";
-import { useRouter } from "next/router";
-import { Text, Textarea, Button, Flex, Heading } from "@chakra-ui/react";
-import pusherJs from "pusher-js";
+import NextLink from "next/link"
+import { useRouter } from "next/router"
+import { Text, Textarea, Button, Flex, Heading } from "@chakra-ui/react"
+import pusherJs from "pusher-js"
 
 
 const dummyMessages = [
@@ -14,16 +14,16 @@ const dummyMessages = [
 ];
 
 export default function ChannelView() {
-  const { data: session } = useSession();
-  const { query } = useRouter();
-  const [messages, setMessages] = useState(dummyMessages);
-  const [msgValue, setMsgValue] = useState('');
-  let channelId = query.id;
-  channelId = `presence-${channelId}`;
-  console.log('channel id', channelId);
+  const { data: session } = useSession()
+  const { query } = useRouter()
+  const [messages, setMessages] = useState(dummyMessages)
+  const [msgValue, setMsgValue] = useState('')
+  let channelId = query.id
+  channelId = `presence-${channelId}`
+  console.log('channel id', channelId)
   let handleMsgChange = (e) => {
-    setMsgValue(e.target.value);
-  };
+    setMsgValue(e.target.value)
+  }
 
   let sendMessage = function() {
     const msg = msgValue;
@@ -49,8 +49,8 @@ export default function ChannelView() {
           'Authorization': `Bearer ${session.accessToken}`
         }
       }
-    });
-    pusher.subscribe(`${channelId}`);
+    })
+    pusher.subscribe(`${channelId}`)
     pusher.bind('chat', function(data) {
       const message = {
         from: data.username,
@@ -60,8 +60,8 @@ export default function ChannelView() {
       console.log('received msg', message);
       const newMessages = messages.concat([message]);
       setMessages(newMessages);
-    });
-  }, []);
+    })
+  }, [])
 
   return (
     <Flex height="100vh" alignItems="center" justifyContent="center">
@@ -90,5 +90,5 @@ export default function ChannelView() {
         </NextLink>
       </Flex>
     </Flex>
-  );
+  )
 }

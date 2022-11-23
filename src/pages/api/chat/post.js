@@ -1,5 +1,4 @@
-const Pusher = require("pusher");
-
+const Pusher = require("pusher")
 
 
 export default function handler(req, res) {
@@ -9,7 +8,7 @@ export default function handler(req, res) {
     secret: process.env.PUSHER_SECRET,
     cluster: process.env.PUSHER_CLUSTER,
     useTLS: true,
-  });
+  })
 
   // FIXME: add some validation for POST params
   const {
