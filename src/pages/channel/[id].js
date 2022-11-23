@@ -10,15 +10,17 @@ export default function ChannelView() {
   const { query } = useRouter()
   let [messages, setMessages] = useState([])
   const [msgValue, setMsgValue] = useState('')
+  
+  const userName = session.user ? session.user.name : 'anonymous'
   const channelId = `presence-${query.id}`
   let handleMsgChange = (e) => {
     setMsgValue(e.target.value)
   }
 
   let sendMessage = function() {
-    const msg = msgValue;
-    const username = "test-user"; //FIXME: get username correctly
-    const channel = `${channelId}`;
+    const msg = msgValue
+    const username = userName
+    const channel = `${channelId}`
 
     //FIXME: If the server returns a 401 here, we need to display an error to the user.
     fetch('/api/chat/post', {
