@@ -2,17 +2,18 @@ const { authOptions } = require('../auth/[...nextauth]')
 import getMyTeams from "../../../getMyTeams"
 const Pusher = require("pusher")
 
+const pusher = new Pusher({
+  appId: process.env.PUSHER_APP_ID,
+  key: process.env.PUSHER_KEY,
+  secret: process.env.PUSHER_SECRET,
+  cluster: process.env.PUSHER_CLUSTER,
+  useTLS: true,
+})
 export default async function handler(req, res) {
   const socketId = req.body.socket_id
   const channel = req.body.channel_name
   const accessToken = req.headers.authorization.replace('Bearer ', '')
-  const pusher = new Pusher({
-    appId: process.env.PUSHER_APP_ID,
-    key: process.env.PUSHER_KEY,
-    secret: process.env.PUSHER_SECRET,
-    cluster: process.env.PUSHER_CLUSTER,
-    useTLS: true,
-  })
+
   try {
     const myTeams = await getMyTeams(accessToken);
     const channelId = channel.replace('presence-', '')
