@@ -54,8 +54,7 @@ export default function ChannelView() {
         text: data.msg,
         timestamp: new Date().toString()
       }
-      messages = messages.concat([message]);
-      setMessages(messages);
+      setMessages([...messages, message]);
     })
   }, [status])
 
