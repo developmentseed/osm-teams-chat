@@ -5,18 +5,10 @@ import { useRouter } from "next/router"
 import { Text, Textarea, Button, Flex, Heading } from "@chakra-ui/react"
 import pusherJs from "pusher-js"
 
-
-const dummyMessages = [
-  { from: "marc", text: "Hello", timestamp: 1669042245033 },
-  { from: "vitor", text: "Hi", timestamp: 1669042245133 },
-  { from: "marc", text: "How are you?", timestamp: 1669042245233 },
-  { from: "vitor", text: "I'm doing great, thanks", timestamp: 1669042245333 },
-];
-
 export default function ChannelView() {
   const { data: session } = useSession()
   const { query } = useRouter()
-  const [messages, setMessages] = useState(dummyMessages)
+  const [messages, setMessages] = useState([])
   const [msgValue, setMsgValue] = useState('')
   let channelId = query.id
   channelId = `presence-${channelId}`
@@ -70,22 +62,22 @@ export default function ChannelView() {
     <Flex height="100vh" alignItems="center" justifyContent="center">
       <Flex direction="column" background="gray.100" w={400} p={12} rounded={6}>
         <Heading mb={6}>OSM Teams Chat</Heading>
-        {messages.map((m) => (
-          <Text key={m.timestamp}>
-            {m.from}: {m.text}{" "}
-          </Text>
-        ))}
+        {messages.length > 0 ? (
+          messages.map((m) => (
+            <Text key={m.timestamp}>
+              {m.from}: {m.text}{" "}
+            </Text>
+          ))
+        ) : (
+          <Text>No messages yet.</Text>
+        )}
         <Textarea
           value={msgValue}
           onChange={handleMsgChange}
-          placeholder={'Type your message here...'}
+          placeholder={"Type your message here..."}
           size="m"
         />
-        <Button
-          onClick={sendMessage}
-        >
-          Send
-        </Button>
+        <Button onClick={sendMessage}>Send</Button>
         <NextLink href={`/`} passHref>
           <Button colorScheme="teal" mt={5}>
             Back to home page
@@ -93,5 +85,5 @@ export default function ChannelView() {
         </NextLink>
       </Flex>
     </Flex>
-  )
+  );
 }
