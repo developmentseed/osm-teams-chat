@@ -31,7 +31,10 @@ export default function ChannelView() {
     const channel = `${channelId}`;
     fetch('/api/chat/post', {
       'method': 'POST',
-      'headers': { 'Content-Type': 'application/json' },
+      'headers': {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${session.accessToken}`
+      },
       'body': JSON.stringify({msg, username, channel})
     })
     setMsgValue('')
