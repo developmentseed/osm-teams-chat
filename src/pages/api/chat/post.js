@@ -1,7 +1,9 @@
+import getMyTeams from "../../../getMyTeams";
+
 const Pusher = require("pusher")
 
 
-export default function handler(req, res) {
+export default async function handler(req, res) {
   const pusher = new Pusher({
     appId: process.env.PUSHER_APP_ID,
     key: process.env.PUSHER_KEY,
@@ -23,11 +25,24 @@ export default function handler(req, res) {
   
   const accessToken = req.headers.authorization.replace('Bearer ', '');
   //FIXME: Implement check if accessToken has permission to POST to this channel
+  
+  try {
+    const myTeams = await getMyTeams(accessToken);
 
-  // FIXME: Add some error handling
-  pusher.trigger(channel, 'chat', {
-    username,
-    msg
-  })
-  res.status(200).json({ok: 'ok'})
+    const channelId = channel.replace('presence-', '')
+
+    const teamIds = myTeams.map(t => t.id.toString());
+    if (!teamIds.includes(channelId)) {
+      return res.status(401).json({'error': 'Not authorized'})
+    }
+    pusher.trigger(channel, 'chat', {
+      username,
+      msg
+    })
+    res.status(200).json({ok: 'ok'})
+  } catch (e) {
+    console.log('auth error', e)
+    res.status(401).json({'error': 'Not authorized'})
+  }
+
 }
