@@ -1,14 +1,21 @@
-import { useState, useEffect } from "react"
+import { useState, useEffect, useReducer } from "react"
 import { useSession } from "next-auth/react"
 import NextLink from "next/link"
 import { useRouter } from "next/router"
 import { Text, Textarea, Button, Flex, Heading } from "@chakra-ui/react"
 import pusherJs from "pusher-js"
 
+const ADD_MESSAGE_ACTION = 'ADD_MESSAGE_ACTION'
+
 export default function ChannelView() {
   const { data: session, status } = useSession()
   const { query } = useRouter()
-  let [messages, setMessages] = useState([])
+  let [messages, dispatchMessages] = useReducer((state, action)=>{
+    if (action.type === ADD_MESSAGE_ACTION) {
+      return [...state, action.data];
+    }
+    throw Error('Unknown action.');
+  }, [])
   const [msgValue, setMsgValue] = useState('')
   
   const userName = session?.user?.name || 'anonymous';
@@ -56,7 +63,10 @@ export default function ChannelView() {
         text: data.msg,
         timestamp: new Date().toString()
       }
-      setMessages([...messages, message]);
+      dispatchMessages({
+        type: ADD_MESSAGE_ACTION,
+        data: message
+      })
     })
   }, [status])
 
