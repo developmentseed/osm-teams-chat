@@ -18,11 +18,19 @@ Install Node.js modules:
 
 Go to <https://mapping.team> and register a new app with callback URL `http://localhost:3000/api/auth/callback/osm-teams`.
 
-Add the provided client id and secret to .env.local:
+Go to <https://pusher.com> register a new app for a React/Node.js tech stack.  
+
+Add OSM Teams and Pusher configurations to environment variables in .env.local, following this example:
 
 ```
 OSM_TEAMS_CLIENT_ID=<client_id>
 OSM_TEAMS_CLIENT_SECRET=<client_secret>
+PUSHER_APP_ID="pusher_app_id"
+PUSHER_KEY="pusher_key"
+PUSHER_SECRET="pusher_secret"
+PUSHER_CLUSTER="pusher_cluster"
+NEXT_PUBLIC_PUSHER_KEY="pusher_key"
+NEXT_PUBLIC_PUSHER_CLUSTER="pusher_cluster"
 ```
 
 Start the server:
