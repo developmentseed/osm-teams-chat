@@ -21,6 +21,8 @@ export default function ChannelView() {
     const msg = msgValue;
     const username = "test-user"; //FIXME: get username correctly
     const channel = `${channelId}`;
+
+    //FIXME: If the server returns a 401 here, we need to display an error to the user.
     fetch('/api/chat/post', {
       'method': 'POST',
       'headers': {
