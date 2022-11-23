@@ -11,7 +11,7 @@ export default function ChannelView() {
   let [messages, setMessages] = useState([])
   const [msgValue, setMsgValue] = useState('')
   
-  const userName = session.user ? session.user.name : 'anonymous'
+  const userName = session?.user?.name || 'anonymous';
   const channelId = `presence-${query.id}`
   let handleMsgChange = (e) => {
     setMsgValue(e.target.value)

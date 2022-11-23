@@ -1,6 +1,6 @@
 import getMyTeams from "../../../getMyTeams";
 
-const Pusher = require("pusher")
+const Pusher = require("pusher");
 
 const pusher = new Pusher({
   appId: process.env.PUSHER_APP_ID,
@@ -8,42 +8,37 @@ const pusher = new Pusher({
   secret: process.env.PUSHER_SECRET,
   cluster: process.env.PUSHER_CLUSTER,
   useTLS: true,
-})
+});
 
 export default async function handler(req, res) {
-
   // FIXME: add some validation for POST params
-  const {
-    username,
-    channel,
-    msg
-  } = req.body
+  const { username, channel, msg } = req.body;
 
   if (!req.headers.authorization) {
-    res.status(401).json({'error': 'Not authorized'})
+    return res.status(401).json({ error: "Not authorized" });
   }
-  
-  const accessToken = req.headers.authorization.replace('Bearer ', '');
+
+  const accessToken = req.headers.authorization.replace("Bearer ", "");
   //FIXME: Implement check if accessToken has permission to POST to this channel
-  
+
   try {
     const myTeams = await getMyTeams(accessToken);
 
-    const channelId = channel.replace('presence-', '')
+    const channelId = channel.replace("presence-", "");
 
-    const teamIds = myTeams.map(t => t.id.toString());
+    const teamIds = myTeams.map((t) => t.id.toString());
     if (!teamIds.includes(channelId)) {
-      return res.status(401).json({'error': 'Not authorized'})
+      return res.status(401).json({ error: "Not authorized" });
     }
-    pusher.trigger(channel, 'chat', {
-      username,
-      msg
-    }, () => {
-      return res.status(200).end({'ok': 'ok'});
-    })
-  } catch (e) {
-    console.log('auth error', e)
-    res.status(401).json({'error': 'Not authorized'})
-  }
 
+    await pusher.trigger(channel, "chat", {
+      username,
+      msg,
+    });
+
+    return res.status(200).json({ ok: "ok" });
+  } catch (e) {
+    console.log("auth error", e);
+    return res.status(401).json({ error: "Not authorized" });
+  }
 }
