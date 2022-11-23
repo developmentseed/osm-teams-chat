@@ -8,11 +8,9 @@ import pusherJs from "pusher-js"
 export default function ChannelView() {
   const { data: session, status } = useSession()
   const { query } = useRouter()
-  const [messages, setMessages] = useState([])
+  let [messages, setMessages] = useState([])
   const [msgValue, setMsgValue] = useState('')
-  let channelId = query.id
-  channelId = `presence-${channelId}`
-  console.log('channel id', channelId)
+  const channelId = `presence-${query.id}`
   let handleMsgChange = (e) => {
     setMsgValue(e.target.value)
   }
@@ -56,9 +54,8 @@ export default function ChannelView() {
         text: data.msg,
         timestamp: new Date().toString()
       }
-      console.log('received msg', message);
-      const newMessages = messages.concat([message]);
-      setMessages(newMessages);
+      messages = messages.concat([message]);
+      setMessages(messages);
     })
   }, [status])
 
