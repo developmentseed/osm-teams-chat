@@ -1,6 +1,7 @@
 import { getToken } from "next-auth/jwt";
 import { cachedUserTeams } from "./teams";
 import { Redis } from "@upstash/redis";
+import { find, propEq } from "ramda";
 
 const redis = new Redis({
   url: process.env.UPSTASH_REDIS_REST_URL,
@@ -29,10 +30,14 @@ export default async function handler(req, res) {
       return res.status(401).json({ error: "Not authorized" });
     }
 
+    // Get channel name
+    const channelName = find(propEq("id", parseInt(channelId)), myTeams)?.name;
+
+    // Get history from redis
     const messageHistory = await redis.lrange(channel, 0, 50);
     const mapHistory = await redis.lrange(`${channel}:map`, 0, -1);
 
-    return res.status(200).json({ messageHistory, mapHistory });
+    return res.status(200).json({ messageHistory, mapHistory, channelName });
   } catch (e) {
     console.log("auth error", e);
     return res.status(401).json({ error: "Not authorized" });

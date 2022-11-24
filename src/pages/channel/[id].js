@@ -33,6 +33,7 @@ export async function getServerSideProps(context) {
 export default function ChannelView(props) {
   const { data: session, status } = useSession();
   const [loading, setLoading] = useState(true);
+  const [channelName, setChannelName] = useState("OSM Teams Chat");
 
   let [messages, dispatchMessages] = useReducer((state, action) => {
     console.log(state, action);
@@ -85,7 +86,7 @@ export default function ChannelView(props) {
       },
     })
       .then((res) => res.json())
-      .then(({ messageHistory, mapHistory }) => {
+      .then(({ messageHistory, mapHistory, channelName }) => {
         // set type
         let allHistory = [];
         messageHistory.forEach((message) => {
@@ -94,6 +95,8 @@ export default function ChannelView(props) {
         mapHistory.forEach((message) => {
           allHistory.push(assoc("type", "map", message));
         });
+
+        setChannelName(channelName);
 
         setLoading(false);
         dispatchMessages({
@@ -123,7 +126,7 @@ export default function ChannelView(props) {
   return (
     <Flex height="100vh" alignItems="center" justifyContent="center">
       <Flex direction="column" background="gray.100" w={900} p={12} rounded={6}>
-        <Heading mb={6}>OSM Teams Chat</Heading>
+        <Heading mb={6}>{channelName}</Heading>
         <Stack height="50vh" overflow={"scroll"}>
           {messages.length > 0 ? (
             messages
