@@ -54,16 +54,17 @@ export default function Home() {
   }
 
   useEffect(() => {
-    fetch('/api/chat/teams', {
-      'headers': {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${accessToken}`
-      }})
-    .then(res => res.json())
-    .then((teams) => {
-      setAvailableTeams(teams)
+    fetch("/api/chat/teams", {
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${accessToken}`,
+      },
     })
-  }, [accessToken])
+      .then((res) => res.json())
+      .then((teams) => {
+        setAvailableTeams(teams);
+      });
+  }, [accessToken]);
 
   if (status === "loading") return null;
 
