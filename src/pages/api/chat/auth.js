@@ -41,7 +41,6 @@ export default async function handler(req, res) {
     const channelId = channel.replace("presence-", "");
     const teamIds = myTeams.map((t) => t.id.toString());
     if (!teamIds.includes(channelId)) {
-      console.log(teamIds, channelId);
       return res.status(401).json({ error: "Not authorized" });
     }
   } catch (e) {

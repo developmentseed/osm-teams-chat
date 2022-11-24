@@ -11,7 +11,6 @@ export default async function handler(req, res) {
   // FIXME: add some validation for POST params
   const token = await getToken({ req });
   const channel = req.query.channel;
-  console.log(channel);
 
   if (!token) {
     // Not Signed in
@@ -30,9 +29,10 @@ export default async function handler(req, res) {
       return res.status(401).json({ error: "Not authorized" });
     }
 
-    const history = await redis.lrange(channel, 0, 50);
+    const messageHistory = await redis.lrange(channel, 0, 50);
+    const mapHistory = await redis.lrange(`${channel}:map`, 0, -1);
 
-    return res.status(200).json(history);
+    return res.status(200).json({ messageHistory, mapHistory });
   } catch (e) {
     console.log("auth error", e);
     return res.status(401).json({ error: "Not authorized" });

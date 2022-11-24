@@ -27,7 +27,7 @@ export default async function handler(req, res) {
 
   const { userId, accessToken } = token;
 
-  const { username, channel, msg } = req.body;
+  const { username, channel, msg, type } = req.body;
 
   try {
     const myTeams = await cachedUserTeams(userId, accessToken);
@@ -40,18 +40,31 @@ export default async function handler(req, res) {
     }
 
     await pusher.trigger(channel, "chat", {
+      type,
       username,
       msg,
     });
 
-    const listLength = await redis.lpush(channel, {
+    const toSave = {
       from: username,
       text: msg,
       timestamp: Date.now(),
-    });
-    // Keep at most 50 messages per channel
-    if (listLength > 50) {
-      await redis.rpop(channel);
+    };
+    switch (type) {
+      case "map": {
+        await redis.lpush(`${channel}:map`, toSave);
+        break;
+      }
+      case "text": {
+        const listLength = await redis.lpush(channel, toSave);
+        // Keep at most 50 messages per channel
+        if (listLength > 50) {
+          await redis.rpop(channel);
+        }
+        break;
+      }
+      default:
+        break;
     }
 
     return res.status(200).json({ ok: "ok" });

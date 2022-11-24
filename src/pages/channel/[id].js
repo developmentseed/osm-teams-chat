@@ -1,18 +1,25 @@
 import { useState, useEffect, useReducer } from "react";
 import { useSession } from "next-auth/react";
 import NextLink from "next/link";
-import { DateTime } from "luxon";
+import MapInput from "../../components/MapInput";
+import Message from "../../components/Message";
+import { assoc } from "ramda";
 
 import {
   Text,
-  Textarea,
   Button,
   Flex,
   Heading,
   Stack,
   Spinner,
+  Tab,
+  Tabs,
+  TabList,
+  TabPanel,
+  TabPanels,
 } from "@chakra-ui/react";
 import pusherJs from "pusher-js";
+import TextInput from "../../components/TextInput";
 
 const ADD_MESSAGE_ACTION = "ADD_MESSAGE_ACTION";
 const ADD_MESSAGE_HISTORY = "ADD_MESSAGE_HISTORY";
@@ -26,6 +33,7 @@ export async function getServerSideProps(context) {
 export default function ChannelView(props) {
   const { data: session, status } = useSession();
   const [loading, setLoading] = useState(true);
+
   let [messages, dispatchMessages] = useReducer((state, action) => {
     console.log(state, action);
     if (action.type === ADD_MESSAGE_ACTION) {
@@ -36,29 +44,24 @@ export default function ChannelView(props) {
     }
     throw Error("Unknown action.");
   }, []);
-  const [msgValue, setMsgValue] = useState("");
 
-  const userName = session?.user?.name || "anonymous";
+  const username = session?.user?.name || "anonymous";
   const channelId = `presence-${props.channelId}`;
-  let handleMsgChange = (e) => {
-    setMsgValue(e.target.value);
-  };
 
-  let sendMessage = function () {
-    const msg = msgValue;
-    const username = userName;
-    const channel = `${channelId}`;
+  const sendMessage = function (type) {
+    return function (msg) {
+      const channel = `${channelId}`;
 
-    //FIXME: If the server returns a 401 here, we need to display an error to the user.
-    fetch("/api/chat/post", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${session.accessToken}`,
-      },
-      body: JSON.stringify({ msg, username, channel }),
-    });
-    setMsgValue("");
+      //FIXME: If the server returns a 401 here, we need to display an error to the user.
+      fetch("/api/chat/post", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${session.accessToken}`,
+        },
+        body: JSON.stringify({ msg, username, channel, type }),
+      });
+    };
   };
 
   useEffect(() => {
@@ -82,16 +85,26 @@ export default function ChannelView(props) {
       },
     })
       .then((res) => res.json())
-      .then((messageHistory) => {
+      .then(({ messageHistory, mapHistory }) => {
+        // set type
+        let allHistory = [];
+        messageHistory.forEach((message) => {
+          allHistory.push(assoc("type", "text", message));
+        });
+        mapHistory.forEach((message) => {
+          allHistory.push(assoc("type", "map", message));
+        });
+
         setLoading(false);
         dispatchMessages({
           type: ADD_MESSAGE_HISTORY,
-          data: messageHistory,
+          data: allHistory,
         });
       });
     pusher.subscribe(`${channelId}`);
     pusher.bind("chat", function (data) {
       const message = {
+        type: data.type,
         from: data.username,
         text: data.msg,
         timestamp: Date.now(),
@@ -115,53 +128,14 @@ export default function ChannelView(props) {
           {messages.length > 0 ? (
             messages
               .sort((a, b) => a.timestamp > b.timestamp)
-              .map((item, index) => {
-                if (item.from === userName) {
-                  return (
-                    <Flex key={index} w="100%" justify="flex-end" rounded={6}>
-                      <Flex
-                        bg="teal.500"
-                        color="white"
-                        minW="100px"
-                        maxW="350px"
-                        rounded={6}
-                        my="1"
-                        p="3"
-                      >
-                        <Stack>
-                          <Text>{item.text}</Text>
-                          <Text fontSize={"xs"} fontWeight={"light"}>
-                            {DateTime.fromMillis(item.timestamp).toRelative()}
-                          </Text>
-                        </Stack>
-                      </Flex>
-                    </Flex>
-                  );
-                } else {
-                  return (
-                    <Flex key={index} w="100%">
-                      <Stack spacing={0}>
-                        <Text fontSize="xs">{item.from}</Text>
-                        <Flex
-                          bg="gray.200"
-                          rounded={6}
-                          color="black"
-                          minW="100px"
-                          maxW="350px"
-                          my="1"
-                          p="3"
-                        >
-                          <Stack>
-                            <Text>{item.text}</Text>
-                            <Text fontSize={"xs"} fontWeight={"light"}>
-                              {DateTime.fromMillis(item.timestamp).toRelative()}
-                            </Text>
-                          </Stack>
-                        </Flex>
-                      </Stack>
-                    </Flex>
-                  );
-                }
+              .map((data, index) => {
+                return (
+                  <Message
+                    key={index}
+                    messageData={data}
+                    isMyMessage={data.from === username}
+                  />
+                );
               })
           ) : loading ? (
             <Spinner />
@@ -169,14 +143,20 @@ export default function ChannelView(props) {
             <Text>No messages yet.</Text>
           )}
         </Stack>
-        <Textarea
-          disabled={loading}
-          value={msgValue}
-          onChange={handleMsgChange}
-          placeholder={"Type your message here..."}
-          size="m"
-        />
-        <Button onClick={sendMessage}>Send</Button>
+        <Tabs size="md" variant="enclosed">
+          <TabList>
+            <Tab>Text</Tab>
+            <Tab>Map</Tab>
+          </TabList>
+          <TabPanels>
+            <TabPanel>
+              <TextInput loading={loading} sendMessage={sendMessage("text")} />
+            </TabPanel>
+            <TabPanel>
+              <MapInput loading={loading} sendMessage={sendMessage("map")} />
+            </TabPanel>
+          </TabPanels>
+        </Tabs>
         <NextLink href={`/`} passHref>
           <Button colorScheme="teal" mt={5}>
             Back to home page
