@@ -92,8 +92,9 @@ export default function ChannelView(props) {
         data: message
       })
     })
+
     return () => {
-      pusher.unbind()
+      pusher.disconnect()
     }
   }, [status, channelId, session])
 
