@@ -1,102 +1,110 @@
-import { useState, useEffect, useReducer } from "react"
-import { useSession } from "next-auth/react"
-import NextLink from "next/link"
-import { DateTime } from 'luxon'
-import { Text, Textarea, Button, Flex, Heading, Tooltip, Spacer } from "@chakra-ui/react"
-import { TimeIcon } from "@chakra-ui/icons"
-import pusherJs from "pusher-js"
+import { useState, useEffect, useReducer } from "react";
+import { useSession } from "next-auth/react";
+import NextLink from "next/link";
+import { DateTime } from "luxon";
+import {
+  Text,
+  Textarea,
+  Button,
+  Flex,
+  Heading,
+  Tooltip,
+  Spacer,
+} from "@chakra-ui/react";
+import { TimeIcon } from "@chakra-ui/icons";
+import pusherJs from "pusher-js";
 
-const ADD_MESSAGE_ACTION = 'ADD_MESSAGE_ACTION'
-const ADD_MESSAGE_HISTORY = 'ADD_MESSAGE_HISTORY'
+const ADD_MESSAGE_ACTION = "ADD_MESSAGE_ACTION";
+const ADD_MESSAGE_HISTORY = "ADD_MESSAGE_HISTORY";
 
 export async function getServerSideProps(context) {
   return {
-    props: { channelId: context.query.id}
-  }
+    props: { channelId: context.query.id },
+  };
 }
 
 export default function ChannelView(props) {
-  const { data: session, status } = useSession()
+  const { data: session, status } = useSession();
 
-  let [messages, dispatchMessages] = useReducer((state, action)=>{
-    console.log(state, action)
+  let [messages, dispatchMessages] = useReducer((state, action) => {
+    console.log(state, action);
     if (action.type === ADD_MESSAGE_ACTION) {
       return [...state, action.data];
     }
     if (action.type === ADD_MESSAGE_HISTORY) {
-      return action.data
+      return action.data;
     }
-    throw Error('Unknown action.');
-  }, [])
-  const [msgValue, setMsgValue] = useState('')
-  
-  const userName = session?.user?.name || 'anonymous';
-  const channelId = `presence-${props.channelId}`
-  let handleMsgChange = (e) => {
-    setMsgValue(e.target.value)
-  }
+    throw Error("Unknown action.");
+  }, []);
+  const [msgValue, setMsgValue] = useState("");
 
-  let sendMessage = function() {
-    const msg = msgValue
-    const username = userName
-    const channel = `${channelId}`
+  const userName = session?.user?.name || "anonymous";
+  const channelId = `presence-${props.channelId}`;
+  let handleMsgChange = (e) => {
+    setMsgValue(e.target.value);
+  };
+
+  let sendMessage = function () {
+    const msg = msgValue;
+    const username = userName;
+    const channel = `${channelId}`;
 
     //FIXME: If the server returns a 401 here, we need to display an error to the user.
-    fetch('/api/chat/post', {
-      'method': 'POST',
-      'headers': {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${session.accessToken}`
+    fetch("/api/chat/post", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${session.accessToken}`,
       },
-      'body': JSON.stringify({msg, username, channel})
-    })
-    setMsgValue('')
+      body: JSON.stringify({ msg, username, channel }),
+    });
+    setMsgValue("");
   };
 
   useEffect(() => {
-    // Wait for authentication    
-    if (status !== 'authenticated') return;
+    // Wait for authentication
+    if (status !== "authenticated") return;
     if (!channelId) return;
 
     const pusher = new pusherJs(process.env.NEXT_PUBLIC_PUSHER_KEY, {
       cluster: process.env.NEXT_PUBLIC_PUSHER_CLUSTER,
       channelAuthorization: {
-        endpoint: '/api/chat/auth',
+        endpoint: "/api/chat/auth",
         headers: {
-          'Authorization': `Bearer ${session.accessToken}`
-        }
-      }
-    })
+          Authorization: `Bearer ${session.accessToken}`,
+        },
+      },
+    });
     fetch(`/api/chat/${channelId}`, {
-      'headers': {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${session.accessToken}`
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${session.accessToken}`,
       },
     })
-    .then(res => res.json())
-    .then(messageHistory => {
-      dispatchMessages({
-        type: ADD_MESSAGE_HISTORY,
-        data: messageHistory
-      })
-    })
-    pusher.subscribe(`${channelId}`)
-    pusher.bind('chat', function(data) {
+      .then((res) => res.json())
+      .then((messageHistory) => {
+        dispatchMessages({
+          type: ADD_MESSAGE_HISTORY,
+          data: messageHistory,
+        });
+      });
+    pusher.subscribe(`${channelId}`);
+    pusher.bind("chat", function (data) {
       const message = {
         from: data.username,
         text: data.msg,
-        timestamp: Date.now()
-      }
+        timestamp: Date.now(),
+      };
       dispatchMessages({
         type: ADD_MESSAGE_ACTION,
-        data: message
-      })
-    })
+        data: message,
+      });
+    });
 
     return () => {
-      pusher.disconnect()
-    }
-  }, [status, channelId, session])
+      pusher.disconnect();
+    };
+  }, [status, channelId, session]);
 
   return (
     <Flex height="100vh" alignItems="center" justifyContent="center">
@@ -104,18 +112,21 @@ export default function ChannelView(props) {
         <Heading mb={6}>OSM Teams Chat</Heading>
         {messages.length > 0 ? (
           messages
-          .sort((a, b) => a.timestamp > b.timestamp)
-          .map((m) => (
-            <Flex key={m.timestamp}>
-            <Text>
-              {m.from}: {m.text}{" "} 
-            </Text>
-            <Spacer />
-            <Tooltip label={DateTime.fromMillis(m.timestamp).toRelative()} fontSize='sm'>
-              <TimeIcon />
-            </Tooltip>
-            </Flex>
-          ))
+            .sort((a, b) => a.timestamp > b.timestamp)
+            .map((m) => (
+              <Flex key={m.timestamp}>
+                <Text>
+                  {m.from}: {m.text}{" "}
+                </Text>
+                <Spacer />
+                <Tooltip
+                  label={DateTime.fromMillis(m.timestamp).toRelative()}
+                  fontSize="sm"
+                >
+                  <TimeIcon />
+                </Tooltip>
+              </Flex>
+            ))
         ) : (
           <Text>No messages yet.</Text>
         )}
