@@ -2,16 +2,16 @@ import { useState, useEffect, useReducer } from "react";
 import { useSession } from "next-auth/react";
 import NextLink from "next/link";
 import { DateTime } from "luxon";
+
 import {
   Text,
   Textarea,
   Button,
   Flex,
   Heading,
-  Tooltip,
-  Spacer,
+  Stack,
+  Spinner,
 } from "@chakra-ui/react";
-import { TimeIcon } from "@chakra-ui/icons";
 import pusherJs from "pusher-js";
 
 const ADD_MESSAGE_ACTION = "ADD_MESSAGE_ACTION";
@@ -25,7 +25,7 @@ export async function getServerSideProps(context) {
 
 export default function ChannelView(props) {
   const { data: session, status } = useSession();
-
+  const [loading, setLoading] = useState(true);
   let [messages, dispatchMessages] = useReducer((state, action) => {
     console.log(state, action);
     if (action.type === ADD_MESSAGE_ACTION) {
@@ -83,6 +83,7 @@ export default function ChannelView(props) {
     })
       .then((res) => res.json())
       .then((messageHistory) => {
+        setLoading(false);
         dispatchMessages({
           type: ADD_MESSAGE_HISTORY,
           data: messageHistory,
@@ -108,29 +109,68 @@ export default function ChannelView(props) {
 
   return (
     <Flex height="100vh" alignItems="center" justifyContent="center">
-      <Flex direction="column" background="gray.100" w={400} p={12} rounded={6}>
+      <Flex direction="column" background="gray.100" w={900} p={12} rounded={6}>
         <Heading mb={6}>OSM Teams Chat</Heading>
-        {messages.length > 0 ? (
-          messages
-            .sort((a, b) => a.timestamp > b.timestamp)
-            .map((m) => (
-              <Flex key={m.timestamp}>
-                <Text>
-                  {m.from}: {m.text}{" "}
-                </Text>
-                <Spacer />
-                <Tooltip
-                  label={DateTime.fromMillis(m.timestamp).toRelative()}
-                  fontSize="sm"
-                >
-                  <TimeIcon />
-                </Tooltip>
-              </Flex>
-            ))
-        ) : (
-          <Text>No messages yet.</Text>
-        )}
+        <Stack height="50vh" overflow={"scroll"}>
+          {messages.length > 0 ? (
+            messages
+              .sort((a, b) => a.timestamp > b.timestamp)
+              .map((item, index) => {
+                if (item.from === userName) {
+                  return (
+                    <Flex key={index} w="100%" justify="flex-end" rounded={6}>
+                      <Flex
+                        bg="teal.500"
+                        color="white"
+                        minW="100px"
+                        maxW="350px"
+                        rounded={6}
+                        my="1"
+                        p="3"
+                      >
+                        <Stack>
+                          <Text>{item.text}</Text>
+                          <Text fontSize={"xs"} fontWeight={"light"}>
+                            {DateTime.fromMillis(item.timestamp).toRelative()}
+                          </Text>
+                        </Stack>
+                      </Flex>
+                    </Flex>
+                  );
+                } else {
+                  return (
+                    <Flex key={index} w="100%">
+                      <Stack spacing={0}>
+                        <Text fontSize="xs">{item.from}</Text>
+                        <Flex
+                          bg="gray.200"
+                          rounded={6}
+                          color="black"
+                          minW="100px"
+                          maxW="350px"
+                          my="1"
+                          p="3"
+                        >
+                          <Stack>
+                            <Text>{item.text}</Text>
+                            <Text fontSize={"xs"} fontWeight={"light"}>
+                              {DateTime.fromMillis(item.timestamp).toRelative()}
+                            </Text>
+                          </Stack>
+                        </Flex>
+                      </Stack>
+                    </Flex>
+                  );
+                }
+              })
+          ) : loading ? (
+            <Spinner />
+          ) : (
+            <Text>No messages yet.</Text>
+          )}
+        </Stack>
         <Textarea
+          disabled={loading}
           value={msgValue}
           onChange={handleMsgChange}
           placeholder={"Type your message here..."}
