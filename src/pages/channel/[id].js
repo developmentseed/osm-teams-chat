@@ -1,8 +1,9 @@
 import { useState, useEffect, useReducer } from "react"
 import { useSession } from "next-auth/react"
 import NextLink from "next/link"
-import { useRouter } from "next/router"
-import { Text, Textarea, Button, Flex, Heading } from "@chakra-ui/react"
+import { DateTime } from 'luxon'
+import { Text, Textarea, Button, Flex, Heading, Tooltip, Spacer } from "@chakra-ui/react"
+import { TimeIcon } from "@chakra-ui/icons"
 import pusherJs from "pusher-js"
 
 const ADD_MESSAGE_ACTION = 'ADD_MESSAGE_ACTION'
@@ -104,9 +105,15 @@ export default function ChannelView(props) {
           messages
           .sort((a, b) => a.timestamp > b.timestamp)
           .map((m) => (
-            <Text key={m.timestamp}>
-              {m.from}: {m.text}{" "}
+            <Flex key={m.timestamp}>
+            <Text>
+              {m.from}: {m.text}{" "} 
             </Text>
+            <Spacer />
+            <Tooltip label={DateTime.fromMillis(m.timestamp).toRelative()} fontSize='sm'>
+              <TimeIcon />
+            </Tooltip>
+            </Flex>
           ))
         ) : (
           <Text>No messages yet.</Text>
