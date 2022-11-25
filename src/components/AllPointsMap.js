@@ -40,14 +40,17 @@ export default function AllPointsMap({ data }) {
           onMouseOver={({ payload }) => {
             setNote(`${payload.properties.from}: ${payload.properties.note}`);
           }}
+          onClick={({ payload }) => {
+            setNote(`${payload.properties.from}: ${payload.properties.note}`);
+          }}
           onMouseOut={() => setNote("...")}
-          styleCallback={() => {
+          styleCallback={(feature, hover) => {
             return {
               fill: "blue",
-              fillOpacity: "0.3",
+              fillOpacity: hover ? "0.9" : "0.3",
               strokeWidth: "1",
               stroke: "white",
-              r: "20",
+              r: hover ? 40 / (zoom + 1) + 2 : 40 / (zoom + 1),
             };
           }}
         />
