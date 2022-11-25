@@ -184,7 +184,7 @@ export default function ChannelView(props) {
             <Text>No messages yet.</Text>
           )}
         </Stack>
-        <Tabs size="md" colorScheme={"teal"}>
+        <Tabs size="md">
           <TabList>
             <Tab>📝 Write</Tab>
             <Tab>📍Add a location</Tab>
@@ -203,9 +203,7 @@ export default function ChannelView(props) {
           </TabPanels>
         </Tabs>
         <NextLink href={`/`} passHref>
-          <Button colorScheme="teal" mt={5}>
-            Back to home page
-          </Button>
+          <Button mt={5}>Back to home page</Button>
         </NextLink>
       </Flex>
     </Flex>

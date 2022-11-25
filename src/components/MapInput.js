@@ -66,7 +66,7 @@ export default function MapInput({ sendMessage }) {
           size="m"
         />
       </Stack>
-      <Button colorScheme="teal" onClick={handleSend} mt={6}>
+      <Button onClick={handleSend} mt={6}>
         Send
       </Button>
     </>

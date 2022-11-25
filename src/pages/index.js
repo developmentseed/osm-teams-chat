@@ -10,9 +10,7 @@ const SignInBox = ({ onSignIn }) => (
       <Text mb={6}>
         Welcome! Please identify yourself to start using the app.
       </Text>
-      <Button colorScheme="teal" onClick={onSignIn}>
-        Sign in
-      </Button>
+      <Button onClick={onSignIn}>Sign in</Button>
     </Flex>
   </Flex>
 );
@@ -26,10 +24,9 @@ const TeamListPage = ({ availableTeams, onSignOut }) => (
           <Text mb={6}>Select a channel to join:</Text>
           {availableTeams.map((t) => (
             <NextLink key={t.id} href={`/channel/${t.id}`} passHref>
-              <Button as="a" colorScheme="teal" m={2} justifyContent="left">
+              <Button as="a" m={2} justifyContent="left">
                 {t.name}
               </Button>
-              <span>{t.moderator ? "mod" : "member"}</span>
             </NextLink>
           ))}{" "}
         </>
@@ -37,7 +34,7 @@ const TeamListPage = ({ availableTeams, onSignOut }) => (
         <Text mb={6}>There are no teams available.</Text>
       )}
 
-      <Button colorScheme="teal" onClick={onSignOut} mt={5}>
+      <Button onClick={onSignOut} mt={5}>
         Sign out
       </Button>
     </Flex>
