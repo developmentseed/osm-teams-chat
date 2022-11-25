@@ -1,6 +1,5 @@
 import { useState, useEffect, useReducer, useRef } from "react";
 import { useSession } from "next-auth/react";
-import NextLink from "next/link";
 import MapInput from "../../components/MapInput";
 import Message from "../../components/Message";
 import { assoc } from "ramda";
@@ -10,9 +9,7 @@ import { ChevronRightIcon } from "@chakra-ui/icons";
 
 import {
   Text,
-  Button,
   Flex,
-  Heading,
   Stack,
   Spinner,
   Tab,

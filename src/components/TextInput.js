@@ -1,4 +1,9 @@
-import { Button, Input, InputGroup, InputRightElement } from "@chakra-ui/react";
+import {
+  Button,
+  InputGroup,
+  InputRightElement,
+  Textarea,
+} from "@chakra-ui/react";
 import React, { useRef, useState } from "react";
 
 export default function TextInput({ loading, sendMessage }) {
@@ -19,7 +24,7 @@ export default function TextInput({ loading, sendMessage }) {
 
   return (
     <InputGroup>
-      <Input
+      <Textarea
         ref={inputRef}
         disabled={loading}
         value={message}
@@ -28,9 +33,7 @@ export default function TextInput({ loading, sendMessage }) {
         placeholder={"Type your message here..."}
       />
       <InputRightElement w={60} justifyContent="right">
-        <Button colorScheme="teal" onClick={handleSend}>
-          Send
-        </Button>
+        <Button onClick={handleSend}>Send</Button>
       </InputRightElement>
     </InputGroup>
   );
