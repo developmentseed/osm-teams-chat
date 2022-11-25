@@ -23,11 +23,10 @@ export default function Message({ messageData, isMyMessage }) {
     return (
       <Flex w="100%" justify="flex-end" rounded={6}>
         <Flex
-          bg="teal.500"
+          bg="brand.900"
           color="white"
           minW="100px"
           maxW="350px"
-          rounded={6}
           my="1"
           p="3"
         >
