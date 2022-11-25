@@ -1,6 +1,7 @@
 import { Stack, Text, Flex } from "@chakra-ui/react";
 import { DateTime } from "luxon";
 import { MapText } from "./MapText";
+import MessageText from "./MessageText";
 
 function MessageBody({ messageData }) {
   return (
@@ -8,7 +9,7 @@ function MessageBody({ messageData }) {
       {messageData.type === "map" ? (
         <MapText feature={messageData.text}></MapText>
       ) : (
-        <Text>{messageData.text}</Text>
+        <MessageText>{messageData.text}</MessageText>
       )}
       <Text fontSize={"xs"} fontWeight={"light"}>
         {DateTime.fromMillis(messageData.timestamp).toRelative()}

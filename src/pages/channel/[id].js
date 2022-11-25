@@ -177,7 +177,7 @@ export default function ChannelView(props) {
         <Heading mb={6}>{channelName}</Heading>
         <Stack height="50vh" overflow={"scroll"}>
           {messages.length > 0 ? (
-            <ChatHistory messages={messages} user={username}></ChatHistory>
+            <ChatHistory messages={messages} username={username}></ChatHistory>
           ) : loading ? (
             <Spinner />
           ) : (
