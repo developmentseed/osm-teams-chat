@@ -1,4 +1,4 @@
-import { useState, useEffect, useReducer } from "react";
+import { useState, useEffect, useReducer, useRef } from "react";
 import { useSession } from "next-auth/react";
 import NextLink from "next/link";
 import MapInput from "../../components/MapInput";
@@ -31,6 +31,32 @@ export async function getServerSideProps(context) {
   return {
     props: { channelId: context.query.id },
   };
+}
+
+function ChatHistory({ messages, username }) {
+  const chatHistoryBottom = useRef();
+
+  // Scroll to bottom of chat history
+  useEffect(() => {
+    chatHistoryBottom.current.scrollIntoView();
+  }, [messages.length]);
+
+  return (
+    <>
+      {messages
+        .sort((a, b) => a.timestamp > b.timestamp)
+        .map((data, index) => {
+          return (
+            <Message
+              key={index}
+              messageData={data}
+              isMyMessage={data.from === username}
+            />
+          );
+        })}
+      <div ref={chatHistoryBottom}></div>
+    </>
+  );
 }
 
 export default function ChannelView(props) {
@@ -151,17 +177,7 @@ export default function ChannelView(props) {
         <Heading mb={6}>{channelName}</Heading>
         <Stack height="50vh" overflow={"scroll"}>
           {messages.length > 0 ? (
-            messages
-              .sort((a, b) => a.timestamp > b.timestamp)
-              .map((data, index) => {
-                return (
-                  <Message
-                    key={index}
-                    messageData={data}
-                    isMyMessage={data.from === username}
-                  />
-                );
-              })
+            <ChatHistory messages={messages} user={username}></ChatHistory>
           ) : loading ? (
             <Spinner />
           ) : (
