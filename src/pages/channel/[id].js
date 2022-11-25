@@ -6,6 +6,8 @@ import Message from "../../components/Message";
 import { assoc } from "ramda";
 import AllPointsMap from "../../components/AllPointsMap";
 
+import { ChevronRightIcon } from "@chakra-ui/icons";
+
 import {
   Text,
   Button,
@@ -18,6 +20,9 @@ import {
   TabList,
   TabPanel,
   TabPanels,
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
 } from "@chakra-ui/react";
 import pusherJs from "pusher-js";
 import TextInput from "../../components/TextInput";
@@ -62,7 +67,7 @@ function ChatHistory({ messages, username }) {
 export default function ChannelView(props) {
   const { data: session, status } = useSession();
   const [loading, setLoading] = useState(true);
-  const [channelName, setChannelName] = useState("OSM Teams Chat");
+  const [channelName, setChannelName] = useState("Loading...");
 
   const [mapData, dispatchMapdata] = useReducer((state, action) => {
     if (action.type === ADD_MAP_POINT) {
@@ -174,7 +179,19 @@ export default function ChannelView(props) {
   return (
     <Flex height="100vh" alignItems="center" justifyContent="center">
       <Flex direction="column" background="gray.100" w={900} p={12} rounded={6}>
-        <Heading mb={6}>{channelName}</Heading>
+        <Breadcrumb
+          fontWeight="medium"
+          fontSize="lg"
+          separator={<ChevronRightIcon color="gray.500" />}
+          pb={5}
+        >
+          <BreadcrumbItem>
+            <BreadcrumbLink href="/">Home</BreadcrumbLink>
+          </BreadcrumbItem>
+          <BreadcrumbItem isLastChild>
+            <Text>{channelName}</Text>
+          </BreadcrumbItem>
+        </Breadcrumb>
         <Stack height="50vh" overflow={"scroll"}>
           {messages.length > 0 ? (
             <ChatHistory messages={messages} username={username}></ChatHistory>
@@ -202,9 +219,6 @@ export default function ChannelView(props) {
             </TabPanel>
           </TabPanels>
         </Tabs>
-        <NextLink href={`/`} passHref>
-          <Button mt={5}>Back to home page</Button>
-        </NextLink>
       </Flex>
     </Flex>
   );
