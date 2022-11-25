@@ -3,8 +3,9 @@ import { Map, Marker } from "pigeon-maps";
 import { Stack, Text } from "@chakra-ui/react";
 
 export function MapText({ feature }) {
-  const anchor = feature?.geometry?.coordinates || [0, 0];
+  const coords = feature?.geometry?.coordinates;
   const note = feature?.properties?.note || "";
+  const anchor = [coords[1], coords[0]];
 
   return (
     <Stack>
@@ -16,7 +17,7 @@ export function MapText({ feature }) {
         mouseEvents={false}
         touchEvents={false}
       >
-        <Marker width={20} anchor={anchor}></Marker>
+        <Marker width={20} anchor={anchor} />
       </Map>
       <Text width={300}>{note}</Text>
     </Stack>

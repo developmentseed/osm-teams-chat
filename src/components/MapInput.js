@@ -29,7 +29,7 @@ export default function MapInput({ sendMessage }) {
       type: "Feature",
       geometry: {
         type: "Point",
-        coordinates: anchor,
+        coordinates: [anchor[1], anchor[0]],
       },
       properties: {
         note: msgValue,

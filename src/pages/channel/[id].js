@@ -4,6 +4,7 @@ import NextLink from "next/link";
 import MapInput from "../../components/MapInput";
 import Message from "../../components/Message";
 import { assoc } from "ramda";
+import AllPointsMap from "../../components/AllPointsMap";
 
 import {
   Text,
@@ -36,7 +37,6 @@ export default function ChannelView(props) {
   const [channelName, setChannelName] = useState("OSM Teams Chat");
 
   let [messages, dispatchMessages] = useReducer((state, action) => {
-    console.log(state, action);
     if (action.type === ADD_MESSAGE_ACTION) {
       return [...state, action.data];
     }
@@ -58,7 +58,7 @@ export default function ChannelView(props) {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${session.accessToken}`,
+          Authorization: `Bearer ${session?.accessToken}`,
         },
         body: JSON.stringify({ msg, username, channel, type }),
       });
@@ -146,10 +146,11 @@ export default function ChannelView(props) {
             <Text>No messages yet.</Text>
           )}
         </Stack>
-        <Tabs size="md" variant="enclosed">
+        <Tabs size="md" colorScheme={"teal"}>
           <TabList>
-            <Tab>Text</Tab>
-            <Tab>Map</Tab>
+            <Tab>📝 Write</Tab>
+            <Tab>📍Add a location</Tab>
+            <Tab>🗺️ View Map</Tab>
           </TabList>
           <TabPanels>
             <TabPanel>
@@ -157,6 +158,12 @@ export default function ChannelView(props) {
             </TabPanel>
             <TabPanel>
               <MapInput loading={loading} sendMessage={sendMessage("map")} />
+            </TabPanel>
+            <TabPanel>
+              <AllPointsMap
+                channelId={channelId}
+                accessToken={session?.accessToken}
+              />
             </TabPanel>
           </TabPanels>
         </Tabs>
