@@ -1,14 +1,11 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Map, GeoJson } from "pigeon-maps";
 import { prop } from "ramda";
 import geoViewport from "@mapbox/geo-viewport";
 import turfBbox from "@turf/bbox";
 import { Stack, Text } from "@chakra-ui/react";
 
-export default function AllPointsMap({ channelId, accessToken }) {
-  const [mapData, setMapData] = useState("");
-  const [mapCenter, setMapCenter] = useState([0, 0]);
-  const [mapZoom, setMapZoom] = useState(1);
+export default function AllPointsMap({ data }) {
   const [note, setNote] = useState("...");
 
   function centerZoomFromLocations(fc, width = 564, height = 300) {
@@ -22,45 +19,25 @@ export default function AllPointsMap({ channelId, accessToken }) {
     };
   }
 
-  useEffect(() => {
-    if (!accessToken) return;
-    fetch(`/api/chat/${channelId}`, {
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${accessToken}`,
-      },
-    })
-      .then((res) => res.json())
-      .then(({ mapHistory }) => {
-        let mapFeatures = mapHistory.map((msg) => {
-          let feature = prop("text", msg);
-          feature.properties.from = prop("from", msg);
-          return feature;
-        });
+  if (!data || data.length === 0) return;
+  let mapFeatures = data.map((msg) => {
+    let feature = prop("text", msg);
+    feature.properties.from = prop("from", msg);
+    return feature;
+  });
 
-        let gj = {
-          type: "FeatureCollection",
-          features: mapFeatures,
-        };
-        setMapData(gj);
-        const { center, zoom } = centerZoomFromLocations(gj);
-        setMapCenter(center);
-        setMapZoom(zoom);
-      });
-  }, [channelId, accessToken]);
+  const gj = {
+    type: "FeatureCollection",
+    features: mapFeatures,
+  };
+  console.log(data, gj);
+  const { center, zoom } = centerZoomFromLocations(gj);
+
   return (
     <Stack>
-      <Map
-        height={300}
-        center={mapCenter}
-        zoom={mapZoom}
-        onBoundsChanged={({ center, zoom }) => {
-          setMapCenter(center);
-          setMapZoom(zoom);
-        }}
-      >
+      <Map height={300} center={center} zoom={zoom}>
         <GeoJson
-          data={mapData}
+          data={gj}
           onMouseOver={({ payload }) => {
             setNote(`${payload.properties.from}: ${payload.properties.note}`);
           }}

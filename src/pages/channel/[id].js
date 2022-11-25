@@ -24,6 +24,8 @@ import TextInput from "../../components/TextInput";
 
 const ADD_MESSAGE_ACTION = "ADD_MESSAGE_ACTION";
 const ADD_MESSAGE_HISTORY = "ADD_MESSAGE_HISTORY";
+const ADD_MAP_POINT = "ADD_MAP_POINT";
+const ADD_MAP_HISTORY = "ADD_MAP_HISTORY";
 
 export async function getServerSideProps(context) {
   return {
@@ -35,6 +37,16 @@ export default function ChannelView(props) {
   const { data: session, status } = useSession();
   const [loading, setLoading] = useState(true);
   const [channelName, setChannelName] = useState("OSM Teams Chat");
+
+  const [mapData, dispatchMapdata] = useReducer((state, action) => {
+    if (action.type === ADD_MAP_POINT) {
+      return [...state, action.data];
+    }
+    if (action.type === ADD_MAP_HISTORY) {
+      return action.data;
+    }
+    throw Error("Unknown action.");
+  }, []);
 
   let [messages, dispatchMessages] = useReducer((state, action) => {
     if (action.type === ADD_MESSAGE_ACTION) {
@@ -103,6 +115,10 @@ export default function ChannelView(props) {
           type: ADD_MESSAGE_HISTORY,
           data: allHistory,
         });
+        dispatchMapdata({
+          type: ADD_MAP_HISTORY,
+          data: mapHistory,
+        });
       });
     pusher.subscribe(`${channelId}`);
     pusher.bind("chat", function (data) {
@@ -116,6 +132,12 @@ export default function ChannelView(props) {
         type: ADD_MESSAGE_ACTION,
         data: message,
       });
+      if (data.type === "map") {
+        dispatchMapdata({
+          type: ADD_MAP_POINT,
+          data: message,
+        });
+      }
     });
 
     return () => {
@@ -160,10 +182,7 @@ export default function ChannelView(props) {
               <MapInput loading={loading} sendMessage={sendMessage("map")} />
             </TabPanel>
             <TabPanel>
-              <AllPointsMap
-                channelId={channelId}
-                accessToken={session?.accessToken}
-              />
+              <AllPointsMap data={mapData} />
             </TabPanel>
           </TabPanels>
         </Tabs>
