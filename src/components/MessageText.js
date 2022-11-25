@@ -13,9 +13,12 @@ const renderLink = ({ attributes, content }) => {
 };
 
 export default function MessageText(props) {
-  return (
-    <Text {...props}>
-      <Linkify options={{ render: renderLink }}>{props.children}</Linkify>
-    </Text>
-  );
+  const lines = props.children.split("\n").map((line, index) => {
+    return (
+      <Text key={index} {...props}>
+        <Linkify options={{ render: renderLink }}>{line}</Linkify>
+      </Text>
+    );
+  });
+  return lines;
 }
