@@ -1,9 +1,4 @@
-import {
-  Button,
-  InputGroup,
-  InputRightElement,
-  Textarea,
-} from "@chakra-ui/react";
+import { Button, Textarea, Flex } from "@chakra-ui/react";
 import React, { useRef, useState } from "react";
 
 export default function TextInput({ loading, sendMessage }) {
@@ -12,18 +7,18 @@ export default function TextInput({ loading, sendMessage }) {
 
   function handleSend() {
     sendMessage(inputRef.current.value);
-    inputRef.current.value = "";
     setMessage("");
   }
 
   function onKeyDown(e) {
-    if (e.key === "Enter") {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
       handleSend();
     }
   }
 
   return (
-    <InputGroup>
+    <Flex direction="column">
       <Textarea
         ref={inputRef}
         disabled={loading}
@@ -31,10 +26,9 @@ export default function TextInput({ loading, sendMessage }) {
         onChange={(e) => setMessage(e.target.value)}
         onKeyDown={onKeyDown}
         placeholder={"Type your message here..."}
+        resize="vertical"
       />
-      <InputRightElement w={60} justifyContent="right">
-        <Button onClick={handleSend}>Send</Button>
-      </InputRightElement>
-    </InputGroup>
+      <Button onClick={handleSend}>Send</Button>
+    </Flex>
   );
 }
