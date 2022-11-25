@@ -30,7 +30,6 @@ export default function AllPointsMap({ data }) {
     type: "FeatureCollection",
     features: mapFeatures,
   };
-  console.log(data, gj);
   const { center, zoom } = centerZoomFromLocations(gj);
 
   return (
