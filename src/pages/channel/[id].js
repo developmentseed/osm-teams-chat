@@ -1,21 +1,31 @@
-import { useState, useEffect, useReducer } from "react";
+import { useState, useEffect, useReducer, useRef } from "react";
 import { useSession } from "next-auth/react";
 import NextLink from "next/link";
-import { DateTime } from "luxon";
+import MapInput from "../../components/MapInput";
+import Message from "../../components/Message";
+import { assoc } from "ramda";
+import AllPointsMap from "../../components/AllPointsMap";
+
 import {
   Text,
-  Textarea,
   Button,
   Flex,
   Heading,
-  Tooltip,
-  Spacer,
+  Stack,
+  Spinner,
+  Tab,
+  Tabs,
+  TabList,
+  TabPanel,
+  TabPanels,
 } from "@chakra-ui/react";
-import { TimeIcon } from "@chakra-ui/icons";
 import pusherJs from "pusher-js";
+import TextInput from "../../components/TextInput";
 
 const ADD_MESSAGE_ACTION = "ADD_MESSAGE_ACTION";
 const ADD_MESSAGE_HISTORY = "ADD_MESSAGE_HISTORY";
+const ADD_MAP_POINT = "ADD_MAP_POINT";
+const ADD_MAP_HISTORY = "ADD_MAP_HISTORY";
 
 export async function getServerSideProps(context) {
   return {
@@ -23,11 +33,48 @@ export async function getServerSideProps(context) {
   };
 }
 
+function ChatHistory({ messages, username }) {
+  const chatHistoryBottom = useRef();
+
+  // Scroll to bottom of chat history
+  useEffect(() => {
+    chatHistoryBottom.current.scrollIntoView();
+  }, [messages.length]);
+
+  return (
+    <>
+      {messages
+        .sort((a, b) => a.timestamp > b.timestamp)
+        .map((data, index) => {
+          return (
+            <Message
+              key={index}
+              messageData={data}
+              isMyMessage={data.from === username}
+            />
+          );
+        })}
+      <div ref={chatHistoryBottom}></div>
+    </>
+  );
+}
+
 export default function ChannelView(props) {
   const { data: session, status } = useSession();
+  const [loading, setLoading] = useState(true);
+  const [channelName, setChannelName] = useState("OSM Teams Chat");
+
+  const [mapData, dispatchMapdata] = useReducer((state, action) => {
+    if (action.type === ADD_MAP_POINT) {
+      return [...state, action.data];
+    }
+    if (action.type === ADD_MAP_HISTORY) {
+      return action.data;
+    }
+    throw Error("Unknown action.");
+  }, []);
 
   let [messages, dispatchMessages] = useReducer((state, action) => {
-    console.log(state, action);
     if (action.type === ADD_MESSAGE_ACTION) {
       return [...state, action.data];
     }
@@ -36,29 +83,24 @@ export default function ChannelView(props) {
     }
     throw Error("Unknown action.");
   }, []);
-  const [msgValue, setMsgValue] = useState("");
 
-  const userName = session?.user?.name || "anonymous";
+  const username = session?.user?.name || "anonymous";
   const channelId = `presence-${props.channelId}`;
-  let handleMsgChange = (e) => {
-    setMsgValue(e.target.value);
-  };
 
-  let sendMessage = function () {
-    const msg = msgValue;
-    const username = userName;
-    const channel = `${channelId}`;
+  const sendMessage = function (type) {
+    return function (msg) {
+      const channel = `${channelId}`;
 
-    //FIXME: If the server returns a 401 here, we need to display an error to the user.
-    fetch("/api/chat/post", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${session.accessToken}`,
-      },
-      body: JSON.stringify({ msg, username, channel }),
-    });
-    setMsgValue("");
+      //FIXME: If the server returns a 401 here, we need to display an error to the user.
+      fetch("/api/chat/post", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${session?.accessToken}`,
+        },
+        body: JSON.stringify({ msg, username, channel, type }),
+      });
+    };
   };
 
   useEffect(() => {
@@ -82,15 +124,32 @@ export default function ChannelView(props) {
       },
     })
       .then((res) => res.json())
-      .then((messageHistory) => {
+      .then(({ messageHistory, mapHistory, channelName }) => {
+        // set type
+        let allHistory = [];
+        messageHistory.forEach((message) => {
+          allHistory.push(assoc("type", "text", message));
+        });
+        mapHistory.forEach((message) => {
+          allHistory.push(assoc("type", "map", message));
+        });
+
+        setChannelName(channelName);
+
+        setLoading(false);
         dispatchMessages({
           type: ADD_MESSAGE_HISTORY,
-          data: messageHistory,
+          data: allHistory,
+        });
+        dispatchMapdata({
+          type: ADD_MAP_HISTORY,
+          data: mapHistory,
         });
       });
     pusher.subscribe(`${channelId}`);
     pusher.bind("chat", function (data) {
       const message = {
+        type: data.type,
         from: data.username,
         text: data.msg,
         timestamp: Date.now(),
@@ -99,6 +158,12 @@ export default function ChannelView(props) {
         type: ADD_MESSAGE_ACTION,
         data: message,
       });
+      if (data.type === "map") {
+        dispatchMapdata({
+          type: ADD_MAP_POINT,
+          data: message,
+        });
+      }
     });
 
     return () => {
@@ -108,35 +173,35 @@ export default function ChannelView(props) {
 
   return (
     <Flex height="100vh" alignItems="center" justifyContent="center">
-      <Flex direction="column" background="gray.100" w={400} p={12} rounded={6}>
-        <Heading mb={6}>OSM Teams Chat</Heading>
-        {messages.length > 0 ? (
-          messages
-            .sort((a, b) => a.timestamp > b.timestamp)
-            .map((m) => (
-              <Flex key={m.timestamp}>
-                <Text>
-                  {m.from}: {m.text}{" "}
-                </Text>
-                <Spacer />
-                <Tooltip
-                  label={DateTime.fromMillis(m.timestamp).toRelative()}
-                  fontSize="sm"
-                >
-                  <TimeIcon />
-                </Tooltip>
-              </Flex>
-            ))
-        ) : (
-          <Text>No messages yet.</Text>
-        )}
-        <Textarea
-          value={msgValue}
-          onChange={handleMsgChange}
-          placeholder={"Type your message here..."}
-          size="m"
-        />
-        <Button onClick={sendMessage}>Send</Button>
+      <Flex direction="column" background="gray.100" w={900} p={12} rounded={6}>
+        <Heading mb={6}>{channelName}</Heading>
+        <Stack height="50vh" overflow={"scroll"}>
+          {messages.length > 0 ? (
+            <ChatHistory messages={messages} user={username}></ChatHistory>
+          ) : loading ? (
+            <Spinner />
+          ) : (
+            <Text>No messages yet.</Text>
+          )}
+        </Stack>
+        <Tabs size="md" colorScheme={"teal"}>
+          <TabList>
+            <Tab>📝 Write</Tab>
+            <Tab>📍Add a location</Tab>
+            <Tab>🗺️ View Map</Tab>
+          </TabList>
+          <TabPanels>
+            <TabPanel>
+              <TextInput loading={loading} sendMessage={sendMessage("text")} />
+            </TabPanel>
+            <TabPanel>
+              <MapInput loading={loading} sendMessage={sendMessage("map")} />
+            </TabPanel>
+            <TabPanel>
+              <AllPointsMap data={mapData} />
+            </TabPanel>
+          </TabPanels>
+        </Tabs>
         <NextLink href={`/`} passHref>
           <Button colorScheme="teal" mt={5}>
             Back to home page
