@@ -3,7 +3,6 @@ import Linkify from "linkify-react";
 import Link from "next/link";
 
 const renderLink = ({ attributes, content }) => {
-  console.log(attributes, content);
   const { href, ...props } = attributes;
   if (!href) return content;
   return (
