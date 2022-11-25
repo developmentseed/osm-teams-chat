@@ -1,6 +1,7 @@
 import React from "react";
 import { Map, Marker } from "pigeon-maps";
-import { Stack, Text } from "@chakra-ui/react";
+import { Stack } from "@chakra-ui/react";
+import MessageText from "./MessageText";
 
 export function MapText({ feature }) {
   const coords = feature?.geometry?.coordinates;
@@ -19,7 +20,7 @@ export function MapText({ feature }) {
       >
         <Marker width={20} anchor={anchor} />
       </Map>
-      <Text width={300}>{note}</Text>
+      <MessageText width={300}>{note}</MessageText>
     </Stack>
   );
 }
