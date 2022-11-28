@@ -20,7 +20,9 @@ Go to <https://mapping.team> and register a new app with callback URL `http://lo
 
 Go to <https://pusher.com> register a new app for a React/Node.js tech stack.  
 
-Add OSM Teams and Pusher configurations to environment variables in .env.local, following this example:
+Go to <https://upstash.com> register a new app for Redis.
+
+Add OSM Teams, Pusher, and Upstash Redis configurations to environment variables in .env.local, following this example:
 
 ```
 OSM_TEAMS_CLIENT_ID=<client_id>
@@ -31,6 +33,8 @@ PUSHER_SECRET="pusher_secret"
 PUSHER_CLUSTER="pusher_cluster"
 NEXT_PUBLIC_PUSHER_KEY="pusher_key"
 NEXT_PUBLIC_PUSHER_CLUSTER="pusher_cluster"
+UPSTASH_REDIS_REST_URL="upstash_redis_rest_url"
+UPSTASH_REDIS_REST_TOKEN="upstash_redis_rest_token"
 ```
 
 Start the server:
