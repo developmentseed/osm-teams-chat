@@ -1,4 +1,4 @@
-import { Button, Textarea, Flex } from "@chakra-ui/react";
+import { Button, Textarea, Stack } from "@chakra-ui/react";
 import React, { useRef, useState } from "react";
 
 export default function TextInput({ loading, sendMessage }) {
@@ -18,7 +18,7 @@ export default function TextInput({ loading, sendMessage }) {
   }
 
   return (
-    <Flex direction="column">
+    <Stack direction="column" alignItems={"flex-end"}>
       <Textarea
         ref={inputRef}
         disabled={loading}
@@ -28,7 +28,9 @@ export default function TextInput({ loading, sendMessage }) {
         placeholder={"Type your message here..."}
         resize="vertical"
       />
-      <Button onClick={handleSend}>Send</Button>
-    </Flex>
+      <Button size="sm" onClick={handleSend}>
+        Send
+      </Button>
+    </Stack>
   );
 }
