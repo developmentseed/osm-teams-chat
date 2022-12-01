@@ -1,30 +1,10 @@
-import SignInBox from "./signin";
+import SignInBox from "../components/signin";
 import { HStack } from "@chakra-ui/react";
-import { useSession, signIn, signOut } from "next-auth/react";
-import { useEffect, useState } from "react";
+import { useSession, signIn } from "next-auth/react";
 import Sidebar from "../components/Sidebar";
 
 export default function Home() {
-  const { status, data } = useSession();
-  const [availableTeams, setAvailableTeams] = useState([]);
-
-  let accessToken;
-  if (data) {
-    accessToken = data.accessToken;
-  }
-
-  useEffect(() => {
-    fetch("/api/chat/teams", {
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${accessToken}`,
-      },
-    })
-      .then((res) => res.json())
-      .then((teams) => {
-        setAvailableTeams(teams);
-      });
-  }, [accessToken]);
+  const { status } = useSession();
 
   if (status === "loading") return null;
 
@@ -32,7 +12,7 @@ export default function Home() {
 
   return isAuthenticated ? (
     <HStack>
-      <Sidebar availableTeams={availableTeams} onSignOut={signOut} />
+      <Sidebar />
     </HStack>
   ) : (
     <SignInBox onSignIn={() => signIn("osm-teams")} />
