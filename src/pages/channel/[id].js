@@ -174,7 +174,7 @@ export default function ChannelView(props) {
 
   return (
     <HStack spacing={0}>
-      <Sidebar availableTeams={0} onSignOut={null} />
+      <Sidebar />
       <Stack w="full">
         <Flex direction="column" h="100vh" w="full">
           <Box p={4} shadow="md" borderWidth="1px">
