@@ -1,10 +1,18 @@
 import NextLink from "next/link";
-import { Stack, Flex, Heading, Button, Text, Divider } from "@chakra-ui/react";
+import {
+  Stack,
+  Flex,
+  Heading,
+  Button,
+  Text,
+  Divider,
+  Spinner,
+} from "@chakra-ui/react";
 import { useState, useEffect } from "react";
 import { useSession, signOut } from "next-auth/react";
 
 export default function Sidebar() {
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [availableTeams, setAvailableTeams] = useState([]);
   const { status, data: session } = useSession();
 
@@ -40,7 +48,9 @@ export default function Sidebar() {
           OSM Teams Chat
         </Heading>
         <Divider borderColor="gray.500" />
-        {availableTeams.length > 0 ? (
+        {loading ? (
+          <Spinner m={4} />
+        ) : availableTeams.length > 0 ? (
           <Flex direction="column">
             <Text
               w="full"
