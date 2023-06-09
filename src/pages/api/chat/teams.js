@@ -20,22 +20,54 @@ export async function cachedUserTeams(userId, accessToken) {
   }
 }
 
+async function getAllMembers(userAgent, teamId) {
+  let page = 0;
+  let members = [];
+  let currentPagination = {};
+  do {
+    // try catch to catch any errors in the async api call
+    try {
+      // use node-fetch to make api call
+      const resp = await userAgent.get(`/api/teams/${teamId}/members?${page}`);
+      const { data, pagination } = resp.body.members;
+      currentPagination = pagination;
+      data.forEach((member) => {
+        members.push(member);
+      });
+      // increment the page with 1 on each loop
+      page++;
+    } catch (err) {
+      logger.error(err);
+    }
+    // keep running until there's no next page
+  } while (currentPagination.currentPage < currentPagination.lastPage);
+
+  return members;
+}
+
 export async function getMyTeams(accessToken) {
   if (!accessToken) return [];
-  return fetch("https://mapping.team/api/my/teams", {
-    headers: {
-      Authorization: `Bearer ${accessToken}`,
-    },
-  })
-    .then((response) => response.json())
-    .then((responseJSON) => {
-      const { data } = responseJSON;
-      if (data) {
-        return data;
-      } else {
-        return [];
-      }
-    });
+  let currentPagination = {};
+  let teams = [];
+  let page = 0;
+  do {
+    // try catch to catch any errors in the async api call
+    try {
+      // use node-fetch to make api call
+      const resp = await fetch("https://mapping.team/api/my/teams");
+      const respJSON = await resp.json();
+      const { data, pagination } = respJSON;
+      currentPagination = pagination;
+      data.forEach((team) => {
+        teams.push(team);
+      });
+      // increment the page with 1 on each loop
+      page++;
+    } catch (err) {
+      logger.error(err);
+    }
+    // keep running until there's no next page
+  } while (currentPagination.currentPage < currentPagination.lastPage);
 }
 
 export default async function handler(req, res) {
