@@ -24,7 +24,6 @@ export async function getMyTeams(accessToken) {
   if (!accessToken) return [];
   let currentPagination = {};
   let teams = [];
-  let page = 0;
   do {
     // try catch to catch any errors in the async api call
     try {
@@ -36,8 +35,6 @@ export async function getMyTeams(accessToken) {
       data.forEach((team) => {
         teams.push(team);
       });
-      // increment the page with 1 on each loop
-      page++;
     } catch (err) {
       console.error(err);
     }
