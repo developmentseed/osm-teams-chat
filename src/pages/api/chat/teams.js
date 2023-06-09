@@ -1,5 +1,6 @@
 import { getToken } from "next-auth/jwt";
 import { Redis } from "@upstash/redis";
+import { isEmpty } from "ramda";
 
 const redis = new Redis({
   url: process.env.UPSTASH_REDIS_REST_URL,
@@ -28,18 +29,30 @@ export async function getMyTeams(accessToken) {
     // try catch to catch any errors in the async api call
     try {
       // use node-fetch to make api call
-      const resp = await fetch("https://mapping.team/api/my/teams");
-      const respJSON = await resp.json();
-      const { data, pagination } = respJSON;
-      currentPagination = pagination;
-      data.forEach((team) => {
-        teams.push(team);
-      });
+      await fetch("https://mapping.team/api/my/teams", {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      })
+        .then((res) => res.json())
+        .then((respJSON) => {
+          const { data, pagination } = respJSON;
+          if (!data) return [];
+          else {
+            currentPagination = pagination;
+            data.forEach((team) => {
+              teams.push(team);
+            });
+          }
+        });
     } catch (err) {
       console.error(err);
     }
     // keep running until there's no next page
-  } while (currentPagination.currentPage < currentPagination.lastPage);
+  } while (
+    !isEmpty(currentPagination) &&
+    currentPagination.currentPage < currentPagination.lastPage
+  );
   return teams;
 }
 
