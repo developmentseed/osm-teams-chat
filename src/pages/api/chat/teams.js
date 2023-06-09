@@ -25,11 +25,12 @@ export async function getMyTeams(accessToken) {
   if (!accessToken) return [];
   let currentPagination = {};
   let teams = [];
+  let page = 0;
   do {
     // try catch to catch any errors in the async api call
     try {
       // use node-fetch to make api call
-      await fetch("https://mapping.team/api/my/teams", {
+      await fetch(`https://mapping.team/api/my/teams?${page}`, {
         headers: {
           Authorization: `Bearer ${accessToken}`,
         },
@@ -40,6 +41,7 @@ export async function getMyTeams(accessToken) {
           if (!data) return [];
           else {
             currentPagination = pagination;
+            page++;
             data.forEach((team) => {
               teams.push(team);
             });
