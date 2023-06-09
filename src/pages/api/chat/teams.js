@@ -20,31 +20,6 @@ export async function cachedUserTeams(userId, accessToken) {
   }
 }
 
-async function getAllMembers(userAgent, teamId) {
-  let page = 0;
-  let members = [];
-  let currentPagination = {};
-  do {
-    // try catch to catch any errors in the async api call
-    try {
-      // use node-fetch to make api call
-      const resp = await userAgent.get(`/api/teams/${teamId}/members?${page}`);
-      const { data, pagination } = resp.body.members;
-      currentPagination = pagination;
-      data.forEach((member) => {
-        members.push(member);
-      });
-      // increment the page with 1 on each loop
-      page++;
-    } catch (err) {
-      logger.error(err);
-    }
-    // keep running until there's no next page
-  } while (currentPagination.currentPage < currentPagination.lastPage);
-
-  return members;
-}
-
 export async function getMyTeams(accessToken) {
   if (!accessToken) return [];
   let currentPagination = {};
@@ -64,7 +39,7 @@ export async function getMyTeams(accessToken) {
       // increment the page with 1 on each loop
       page++;
     } catch (err) {
-      logger.error(err);
+      console.error(err);
     }
     // keep running until there's no next page
   } while (currentPagination.currentPage < currentPagination.lastPage);
