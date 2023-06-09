@@ -40,6 +40,7 @@ export async function getMyTeams(accessToken) {
     }
     // keep running until there's no next page
   } while (currentPagination.currentPage < currentPagination.lastPage);
+  return teams;
 }
 
 export default async function handler(req, res) {
