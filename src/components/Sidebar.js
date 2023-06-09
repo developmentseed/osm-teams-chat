@@ -43,7 +43,7 @@ export default function Sidebar() {
       borderColor="black.200"
       boxShadow={"md"}
     >
-      <Flex direction="column" minW={"280"} color="gray.200">
+      <Flex direction="column" minW={"280"} color="gray.200" h="90%">
         <Heading as={NextLink} size={"md"} p={4} href="/">
           OSM Teams Chat
         </Heading>
@@ -51,7 +51,7 @@ export default function Sidebar() {
         {loading ? (
           <Spinner m={4} />
         ) : availableTeams.length > 0 ? (
-          <Flex direction="column">
+          <Flex direction="column" overflow="scroll">
             <Text
               w="full"
               textTransform={"uppercase"}
@@ -78,6 +78,7 @@ export default function Sidebar() {
                 # {t.name}
               </Button>
             ))}{" "}
+
           </Flex>
         ) : (
           <Text p={4}>No teams available</Text>

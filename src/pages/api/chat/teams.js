@@ -30,23 +30,25 @@ export async function getMyTeams(accessToken) {
     // try catch to catch any errors in the async api call
     try {
       // use node-fetch to make api call
-      await fetch(`https://mapping.team/api/my/teams?${page}`, {
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-        },
-      })
-        .then((res) => res.json())
-        .then((respJSON) => {
-          const { data, pagination } = respJSON;
-          if (!data) return [];
-          else {
-            currentPagination = pagination;
-            page++;
-            data.forEach((team) => {
-              teams.push(team);
-            });
-          }
+      const res = await fetch(
+        `https://mapping.team/api/my/teams?page=${page}`,
+        {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+          },
+        }
+      );
+      const respJSON = await res.json();
+      const { data, pagination } = respJSON;
+      console.log(pagination);
+      if (!data) return [];
+      else {
+        currentPagination = pagination;
+        page = page + 1;
+        data.forEach((team) => {
+          teams.push(team);
         });
+      }
     } catch (err) {
       console.error(err);
     }
