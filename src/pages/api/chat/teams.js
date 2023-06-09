@@ -1,4 +1,3 @@
-import { assoc } from "ramda";
 import { getToken } from "next-auth/jwt";
 import { Redis } from "@upstash/redis";
 
@@ -8,13 +7,16 @@ const redis = new Redis({
 });
 
 export async function cachedUserTeams(userId, accessToken) {
-  let teams = await redis.get(`user:${userId}:teams`);
+  let teams = await redis.json.get(`user:${userId}:teams`, "$");
   if (!teams || teams.length === 0) {
     teams = await getMyTeams(accessToken);
-    await redis.set(`user:${userId}:teams`, teams, { ex: 300 }); // set expiry to 5 mins
-    return teams;
+    await redis.json.set(`user:${userId}:teams`, "$", teams, {
+      nx: true,
+    }); // set expiry to 5 mins
+    await redis.expire(`user:${userId}:teams`, 300);
+    return teams[0];
   } else {
-    return teams;
+    return teams[0];
   }
 }
 
@@ -26,20 +28,10 @@ export async function getMyTeams(accessToken) {
     },
   })
     .then((response) => response.json())
-    .then((data) => {
+    .then((responseJSON) => {
+      const { data } = responseJSON;
       if (data) {
-        const memberOf = data.member;
-        const moderatorOf = data.moderator;
-
-        const teams = memberOf.map((team) => {
-          for (let moderatedTeam of moderatorOf) {
-            if (moderatedTeam.id === team.id) {
-              return assoc("moderator", true, team);
-            }
-          }
-          return team;
-        });
-        return teams;
+        return data;
       } else {
         return [];
       }

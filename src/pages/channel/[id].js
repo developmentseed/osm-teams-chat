@@ -128,10 +128,10 @@ export default function ChannelView(props) {
       .then(({ messageHistory, mapHistory, channelName }) => {
         // set type
         let allHistory = [];
-        messageHistory.forEach((message) => {
+        messageHistory?.forEach((message) => {
           allHistory.push(assoc("type", "text", message));
         });
-        mapHistory.forEach((message) => {
+        mapHistory?.forEach((message) => {
           allHistory.push(assoc("type", "map", message));
         });
 
